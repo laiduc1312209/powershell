@@ -38,14 +38,23 @@ $imageBrush = New-Object System.Windows.Media.ImageBrush
 $imageBrush.ImageSource = [System.Windows.Media.Imaging.BitmapImage]::new([System.Uri]::new($imagePath))
 $Window.Background = $imageBrush
 
-# Kiểm tra trạng thái cài đặt Python
+# Hiển thị cửa sổ UI
+$Window.Show()
+
+# Kiểm tra trạng thái cài đặt Python sau khi hiển thị UI
+Start-Sleep -Seconds 2  # Đợi một chút để UI hiển thị hoàn toàn
+
 $pythonVersion = & python --version 2>&1 | Out-String
 
 if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
-    $Window.FindName("StatusTextBlock").Text = "Python is installed. Version: $($matches[1])"
-    $Window.FindName("StatusTextBlock").Foreground = [System.Windows.Media.Brushes]::Green
+    $Window.Dispatcher.Invoke([action] {
+        $Window.FindName("StatusTextBlock").Text = "Python is installed. Version: $($matches[1])"
+        $Window.FindName("StatusTextBlock").Foreground = [System.Windows.Media.Brushes]::Green
+    })
 } else {
-    $Window.FindName("StatusTextBlock").Text = "Python is not installed."
+    $Window.Dispatcher.Invoke([action] {
+        $Window.FindName("StatusTextBlock").Text = "Python is not installed."
+    })
 
     # Hỏi người dùng có muốn cài đặt Python không
     $result = [System.Windows.MessageBox]::Show("Python is not installed. Do you want to install it now?", "Python Installation", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
@@ -65,8 +74,11 @@ if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
         [System.Windows.MessageBox]::Show("Python has been installed. Please restart the application.", "Installation Complete", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
         $Window.Close()
     } else {
-        $Window.FindName("StatusTextBlock").Foreground = [System.Windows.Media.Brushes]::Red
+        $Window.Dispatcher.Invoke([action] {
+            $Window.FindName("StatusTextBlock").Foreground = [System.Windows.Media.Brushes]::Red
+        })
     }
 }
 
-$Window.ShowDialog()
+# Đợi cửa sổ đóng trước khi kết thúc script
+$Window.Dispatcher.Invoke([action] { $Window.Close() })
