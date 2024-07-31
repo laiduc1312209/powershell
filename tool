@@ -39,10 +39,10 @@ $imageBrush.ImageSource = [System.Windows.Media.Imaging.BitmapImage]::new([Syste
 $Window.Background = $imageBrush
 
 # Kiểm tra trạng thái cài đặt Python
-$pythonPath = (Get-Command python -ErrorAction SilentlyContinue).Source
+$pythonVersion = & python --version 2>&1 | Out-String
 
-if ($pythonPath) {
-    $Window.FindName("StatusTextBlock").Text = "Python is installed."
+if ($pythonVersion -match "Python (\d+\.\d+\.\d+)") {
+    $Window.FindName("StatusTextBlock").Text = "Python is installed. Version: $($matches[1])"
     $Window.FindName("StatusTextBlock").Foreground = [System.Windows.Media.Brushes]::Green
 } else {
     $Window.FindName("StatusTextBlock").Text = "Python is not installed."
